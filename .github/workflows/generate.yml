@@ -1,6 +1,6 @@
 name: generate index
 
-# 生成 index.json，有变化时开（或更新）一个 PR，由维护者审核合并，不直接推送 main
+# 生成 index.json，有变化时由 bot 直接提交到 main，无需人工操作
 on:
   push:
     branches: [main]
@@ -11,7 +11,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 concurrency:
   group: generate-index
@@ -36,32 +35,26 @@ jobs:
           key: plugin-market-cache-${{ env.DSH_REF }}-${{ github.run_id }}
           restore-keys: plugin-market-cache-${{ env.DSH_REF }}-
 
-      # 有来源读取失败（退出码 1）时生成器保留它上次的结果，照样开 PR，最后再让任务失败以便通知
+      # 有来源读取失败（退出码 1）时生成器保留它上次的结果，照样提交，最后再让任务失败以便通知
       - name: Generate index.json
         id: generate
         run: |
           status=0
-          scripts/generate.sh 2>&1 | tee "$RUNNER_TEMP/generate.log" || status=${PIPESTATUS[0]}
+          scripts/generate.sh || status=$?
           echo "status=$status" >> "$GITHUB_OUTPUT"
-          {
-            echo 'summary<<EOF'
-            tail -n 40 "$RUNNER_TEMP/generate.log"
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
           [ "$status" -le 1 ]
 
-      - uses: peter-evans/create-pull-request@v7
-        with:
-          branch: bot/refresh-index
-          delete-branch: true
-          commit-message: Refresh index.json
-          title: Refresh index.json
-          body: |
-            由 [generate index](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) 自动生成。合并前请看一下 diff 里新增的插件和版本。
-
-            ```
-            ${{ steps.generate.outputs.summary }}
-            ```
+      - name: Commit changes
+        run: |
+          git add -A index.json $(test -d icons && echo icons)
+          if git diff --cached --quiet; then
+            echo "index.json unchanged"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Regenerate index.json"
+          git push
 
       - name: Fail on unreadable sources
         if: steps.generate.outputs.status == '1'

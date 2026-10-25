@@ -19,7 +19,7 @@ https://raw.githubusercontent.com/suj1e/seek-bazaar/main/index.json
 https://github.com/author/dsh-plugin
 ```
 
-合并后 GitHub Actions 会用 DSH 官方的[索引生成器](https://github.com/deepseek-ai/deepseek-harness/tree/master/apps/plugin-market-generator)重新生成 [`index.json`](index.json)，以 PR 的形式提交，维护者审核后上线。每天也会自动检查一次插件的新版本，同样走 PR。
+合并后 GitHub Actions 会用 DSH 官方的[索引生成器](https://github.com/deepseek-ai/deepseek-harness/tree/master/apps/plugin-market-generator)自动重新生成 [`index.json`](index.json)，每天也会自动收录插件发布的新版本。
 
 被收录的插件需要满足：
 

@@ -13,18 +13,21 @@ seek-bazaar 是 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harne
 | `scripts/check-sources.sh` | PR 检查：新增来源必须能读取且至少产出一个插件。 |
 | `.github/actions/setup-generator/` | 拉取固定版本的 DSH 并安装生成器，两个 workflow 共用。 |
 | `.github/workflows/check.yml` | PR 检查。 |
-| `.github/workflows/generate.yml` | 生成 `index.json` 并开 PR。 |
+| `.github/workflows/generate.yml` | 生成 `index.json` 并直接提交到 main。 |
 
 ## 流程
 
+维护者唯一的手动操作是合并收录 PR，其余全自动。
+
 1. 贡献者提 PR，在 `plugins.txt` 加一行。
 2. `check.yml` 运行 `check-sources.sh`：整份列表无效则失败；对每个新增来源单独跑生成器，读取失败或产出 0 个插件则失败。生成器对不合格插件只跳过不报错，这一步就是为了把它变成失败。
-3. 维护者合并后，`generate.yml` 被触发，重新生成 `index.json`，有变化时开（或更新）分支 `bot/refresh-index` 上的 **Refresh index.json** PR。
-4. 维护者审核该 PR 的 diff 后合并，`index.json` 才更新到 main。
+3. 维护者合并后，`generate.yml` 重新生成 `index.json`，有变化时由 `github-actions[bot]` 直接提交到 main。
 
-`generate.yml` 每天 03:00 UTC 也会运行一次，收录已收录插件新发布的版本，同样走 PR，**不会未经审核就进入索引**。workflow 从不直接推送 main，因此 main 开启分支保护也不影响。
+`generate.yml` 每天 03:00 UTC 也会运行一次，自动收录已收录插件新发布的版本。
 
-有来源读取失败时，生成器保留该来源上一次的结果，照样开 PR，但任务最终标为失败以便通知。
+有来源读取失败时，生成器保留该来源上一次的结果，照样提交，但任务最终标为失败以便通知。
+
+bot 直接推送 main，所以若给 main 开分支保护，需要允许 GitHub Actions 推送，否则生成会失败。
 
 生成器只下载和读取文件，不安装、不执行插件代码。
 
@@ -35,7 +38,7 @@ seek-bazaar 是 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harne
 1. 在 [DSH releases](https://github.com/deepseek-ai/deepseek-harness/releases) 选新 tag；
 2. 同时改 `check.yml` 和 `generate.yml` 里的 `DSH_REF`；
 3. 若新版本要求的 Node 或 pnpm 版本变了（看 DSH 根目录 `package.json` 的 `engines.node` 和 `packageManager`），同步改 `setup-generator/action.yml`；
-4. 推送后看生成的 PR diff 是否符合预期。
+4. 推送后看 bot 提交的 `index.json` diff 是否符合预期。
 
 ## 收录插件
 
@@ -61,9 +64,7 @@ https://github.com/author/dsh-plugin
 
 ## 审核
 
-**收录 PR**：只改了 `plugins.txt`；`check sources` 通过；来源可信。索引内容是插件作者的自我声明，DSH 不做审核，留意冒用 `@deepseek-ai/dsh-*` 等官方名称的包。
-
-**Refresh index.json PR**：看 diff 里新增的插件和版本，确认没有意外出现的插件或来源变化（例如某个版本的 `source` 换了仓库或 registry）。
+合并收录 PR 前确认：只改了 `plugins.txt`；`check sources` 通过；来源可信。索引内容是插件作者的自我声明，DSH 不做审核，留意冒用 `@deepseek-ai/dsh-*` 等官方名称的包。已收录插件之后发布的新版本会被自动收录，不再经过审核。
 
 ## 本地运行
 
