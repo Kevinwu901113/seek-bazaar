@@ -2,5 +2,43 @@
   "format": 1,
   "title": "Seek Bazaar",
   "description": "DeepSeek Harness 插件市场",
-  "plugins": []
+  "plugins": [
+    {
+      "name": "dsh-promptsmith",
+      "title": {
+        "en": "PromptSmith",
+        "zh": "PromptSmith 提示词工坊"
+      },
+      "description": {
+        "en": "Polish your draft with one click and predict your next message, right in the input box.",
+        "zh": "在输入框里一键润色草稿，并在回答结束后预测你的下一句。"
+      },
+      "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImUiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmNkMzRkIi8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2ZiOTIzYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y0NzJiNiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMxYzE5MTciLz4KICA8cGF0aCBkPSJNMjcgMTJDMjkgMjYgMzMuNSAzMC42IDQ3IDMzQzMzLjUgMzUuNCAyOSA0MCAyNyA1NEMyNSA0MCAyMC41IDM1LjQgNyAzM0MyMC41IDMwLjYgMjUgMjYgMjcgMTJaIiBmaWxsPSJ1cmwoI2UpIi8+CiAgPHBhdGggZD0iTTQ4IDdDNDguNyAxMiA1MC4xIDEzLjQgNTUgMTRDNTAuMSAxNC42IDQ4LjcgMTYgNDggMjFDNDcuMyAxNiA0NS45IDE0LjYgNDEgMTRDNDUuOSAxMy40IDQ3LjMgMTIgNDggN1oiIGZpbGw9IiNmZGU2OGEiLz4KPC9zdmc+Cg==",
+      "author": "suj1e",
+      "homepage": "https://github.com/suj1e/dsh-promptsmith",
+      "repository": {
+        "url": "https://github.com/suj1e/dsh-promptsmith"
+      },
+      "metadata": {
+        "keywords": [
+          "dsh",
+          "deepseek-harness",
+          "dsh-plugin",
+          "prompt"
+        ]
+      },
+      "versions": [
+        {
+          "version": "0.1.0",
+          "publishTimestamp": 1792908440,
+          "source": {
+            "type": "npm"
+          },
+          "engines": {
+            "dsh": ">=0.2.1-rc.3 <0.3.0"
+          }
+        }
+      ]
+    }
+  ]
 }
