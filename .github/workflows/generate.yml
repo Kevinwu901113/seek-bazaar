@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
     paths: ["plugins.txt", ".github/workflows/generate.yml"]
+  # PR 只试跑生成器检查来源能否读取，不提交
+  pull_request:
+    paths: ["plugins.txt", ".github/workflows/generate.yml"]
   schedule:
     - cron: "0 3 * * *"
   workflow_dispatch:
@@ -12,7 +15,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: generate-index
+  group: generate-index-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
   cancel-in-progress: false
 
 jobs:
@@ -52,6 +55,7 @@ jobs:
             --description "DeepSeek Harness 插件市场"
 
       - name: Commit changes
+        if: github.event_name != 'pull_request'
         run: |
           git add index.json icons 2>/dev/null || git add index.json
           if git diff --cached --quiet; then

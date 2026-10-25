@@ -12,7 +12,7 @@ https://raw.githubusercontent.com/suj1e/seek-bazaar/main/index.json
 
 ## 收录插件
 
-在 [`plugins.txt`](plugins.txt) 里加一行，npm 包名或 Git 仓库 URL 都可以，然后推送或提 PR：
+提 PR，在 [`plugins.txt`](plugins.txt) 里加一行，npm 包名或 Git 仓库 URL 都可以（PR 会自动试跑生成器检查来源）：
 
 ```text
 @scope/dsh-example
