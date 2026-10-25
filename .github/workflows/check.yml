@@ -1,0 +1,34 @@
+name: check sources
+
+# PR 只检查，不提交：新增来源必须能读取且至少产出一个插件
+on:
+  pull_request:
+    paths: ["plugins.txt", "scripts/**", ".github/**"]
+
+permissions:
+  contents: read
+
+env:
+  DSH_REF: dsh-v0.2.1-rc.3
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch base branch
+        run: git fetch --depth 1 origin "$GITHUB_BASE_REF"
+
+      - uses: ./.github/actions/setup-generator
+        with:
+          dsh-ref: ${{ env.DSH_REF }}
+
+      - uses: actions/cache/restore@v4
+        with:
+          path: .plugin-market-cache
+          key: plugin-market-cache-${{ env.DSH_REF }}-
+          restore-keys: plugin-market-cache-${{ env.DSH_REF }}-
+
+      - name: Check new sources
+        run: scripts/check-sources.sh "origin/$GITHUB_BASE_REF"

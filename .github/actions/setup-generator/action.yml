@@ -1,0 +1,28 @@
+name: Set up DSH plugin market generator
+description: 拉取固定版本的 DSH 仓库并安装官方索引生成器，导出 DSH_DIR。
+
+inputs:
+  dsh-ref:
+    description: DSH 仓库的 tag。升级生成器时改 workflow 里的 DSH_REF。
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 24
+
+    - uses: pnpm/action-setup@v4
+      with:
+        version: 11.28.5
+
+    - name: Install generator
+      shell: bash
+      env:
+        DSH_REF: ${{ inputs.dsh-ref }}
+      run: |
+        dir="$RUNNER_TEMP/dsh"
+        git clone --depth 1 --branch "$DSH_REF" https://github.com/deepseek-ai/deepseek-harness "$dir"
+        (cd "$dir" && pnpm install --filter "@deepseek-ai/dsh-plugin-market-generator..." --ignore-scripts)
+        echo "DSH_DIR=$dir" >> "$GITHUB_ENV"

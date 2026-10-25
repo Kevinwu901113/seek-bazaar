@@ -8,17 +8,34 @@ seek-bazaar 是 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harne
 |---|---|
 | `plugins.txt` | 收录列表，**唯一需要人工维护的文件**。每行一个 npm 包名或 Git 仓库 URL，`#` 开头为注释，空行忽略。 |
 | `index.json` | DSH「发现」页读取的索引，由 CI 生成。**不要手改**，下次生成会被覆盖。 |
-| `icons/` | 生成器写出的大图标（小图标内联在 `index.json`）。同样由 CI 生成，可能不存在。 |
-| `.github/workflows/generate.yml` | 生成 `index.json` 的工作流。 |
+| `icons/` | 生成器写出的大图标（小图标内联在 `index.json`）。由 CI 生成，可能不存在。 |
+| `scripts/generate.sh` | 调用官方生成器。市场标题、描述、缓存位置只在这里定义。 |
+| `scripts/check-sources.sh` | PR 检查：新增来源必须能读取且至少产出一个插件。 |
+| `.github/actions/setup-generator/` | 拉取固定版本的 DSH 并安装生成器，两个 workflow 共用。 |
+| `.github/workflows/check.yml` | PR 检查。 |
+| `.github/workflows/generate.yml` | 生成 `index.json` 并开 PR。 |
 
-## 工作流
+## 流程
 
-`generate.yml` 拉取 DSH 仓库，运行官方的 [`plugin-market-generator`](https://github.com/deepseek-ai/deepseek-harness/tree/master/apps/plugin-market-generator)，以 `plugins.txt` 为输入写出 `index.json`。
+1. 贡献者提 PR，在 `plugins.txt` 加一行。
+2. `check.yml` 运行 `check-sources.sh`：整份列表无效则失败；对每个新增来源单独跑生成器，读取失败或产出 0 个插件则失败。生成器对不合格插件只跳过不报错，这一步就是为了把它变成失败。
+3. 维护者合并后，`generate.yml` 被触发，重新生成 `index.json`，有变化时开（或更新）分支 `bot/refresh-index` 上的 **Refresh index.json** PR。
+4. 维护者审核该 PR 的 diff 后合并，`index.json` 才更新到 main。
 
-- **推送到 main**（改动 `plugins.txt` 或工作流）、**每天 03:00 UTC**、**手动触发**：生成并在有变化时由 `github-actions[bot]` 提交回 main。定时运行用来收录插件新发布的版本。
-- **PR**：只试跑生成器，不提交。生成器有来源读取失败时退出码为 1，PR 检查失败。
+`generate.yml` 每天 03:00 UTC 也会运行一次，收录已收录插件新发布的版本，同样走 PR，**不会未经审核就进入索引**。workflow 从不直接推送 main，因此 main 开启分支保护也不影响。
+
+有来源读取失败时，生成器保留该来源上一次的结果，照样开 PR，但任务最终标为失败以便通知。
 
 生成器只下载和读取文件，不安装、不执行插件代码。
+
+## 生成器版本
+
+两个 workflow 的 `env.DSH_REF` 固定了 DSH 仓库的 tag（目前 `dsh-v0.2.1-rc.3`），避免上游改动悄悄改变生成结果。升级时：
+
+1. 在 [DSH releases](https://github.com/deepseek-ai/deepseek-harness/releases) 选新 tag；
+2. 同时改 `check.yml` 和 `generate.yml` 里的 `DSH_REF`；
+3. 若新版本要求的 Node 或 pnpm 版本变了（看 DSH 根目录 `package.json` 的 `engines.node` 和 `packageManager`），同步改 `setup-generator/action.yml`；
+4. 推送后看生成的 PR diff 是否符合预期。
 
 ## 收录插件
 
@@ -35,38 +52,33 @@ https://github.com/author/dsh-plugin
 - npm 包名不带版本号或范围。
 - 同一包名出现多次时，靠前的来源生效，所以不要重复收录。
 
-插件本身需要满足以下条件才会出现在索引里，否则会被生成器跳过（不报错，只是没有条目）：
+插件本身需要满足：
 
 - `package.json` 声明了 `dsh.bundle`，其 `patch` 指向文件；
 - 声明了 `engines.dsh`，或通过 `@deepseek-ai/dsh*` 的 `peerDependencies` 声明兼容范围；
 - 不是 `"private": true`；
 - npm 来源：版本已发布且未弃用。Git 来源：默认分支或 `vX.Y.Z` / `<name>@X.Y.Z` 标签上的版本。
 
-## 审核 PR
+## 审核
 
-合并收录 PR 前检查：
+**收录 PR**：只改了 `plugins.txt`；`check sources` 通过；来源可信。索引内容是插件作者的自我声明，DSH 不做审核，留意冒用 `@deepseek-ai/dsh-*` 等官方名称的包。
 
-1. 只改了 `plugins.txt`，没有手改 `index.json`。
-2. PR 检查通过。
-3. 在 PR 检查日志的 `Generate index.json` 步骤里确认插件数比 main 上多了，没有新来源被静默跳过。
-4. 来源可信：索引内容是插件作者的自我声明，DSH 不做审核。留意冒用 `@deepseek-ai/dsh-*` 等官方名称的包。
+**Refresh index.json PR**：看 diff 里新增的插件和版本，确认没有意外出现的插件或来源变化（例如某个版本的 `source` 换了仓库或 registry）。
 
-## 本地生成
+## 本地运行
 
-需要 Node ≥24 和 pnpm 11：
+需要 Node ≥24 和 pnpm 11，`DSH_REF` 与 workflow 保持一致：
 
 ```bash
-git clone --depth 1 https://github.com/deepseek-ai/deepseek-harness ../dsh
-cd ../dsh && pnpm install --filter "@deepseek-ai/dsh-plugin-market-generator..." --ignore-scripts
-pnpm --filter @deepseek-ai/dsh-plugin-market-generator start \
-  --input "$OLDPWD/plugins.txt" --output "$OLDPWD/index.json" \
-  --cache "$OLDPWD/.plugin-market-cache" \
-  --title "Seek Bazaar" --description "DeepSeek Harness 插件市场"
+git clone --depth 1 --branch dsh-v0.2.1-rc.3 https://github.com/deepseek-ai/deepseek-harness ../dsh
+(cd ../dsh && pnpm install --filter "@deepseek-ai/dsh-plugin-market-generator..." --ignore-scripts)
+DSH_DIR=../dsh scripts/generate.sh                 # 重新生成 index.json
+DSH_DIR=../dsh scripts/check-sources.sh origin/main # 检查相对 main 新增的来源
 ```
 
-参数与 CI 保持一致；改了其中之一要同步另一处。`.plugin-market-cache/` 不要提交。
+`.plugin-market-cache/` 已被忽略，不要提交。
 
 ## 约定
 
 - 文档用中文。
-- 索引格式和生成规则以 DSH 官方文档为准：[插件市场指南](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/guide/plugin-market.zh.md)、[索引格式](https://github.com/deepseek-ai/deepseek-harness/blob/master/.agents/notes/implemented/feature/2026-10-02-plugin-market-index-format.zh.md)。
+- 索引格式和生成规则以 DSH 官方文档为准：[插件市场指南](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/guide/plugin-market.zh.md)、[索引格式](https://github.com/deepseek-ai/deepseek-harness/blob/master/.agents/notes/implemented/feature/2026-10-02-plugin-market-index-format.zh.md)、[生成器](https://github.com/deepseek-ai/deepseek-harness/tree/master/apps/plugin-market-generator)。

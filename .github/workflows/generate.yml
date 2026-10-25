@@ -1,22 +1,24 @@
 name: generate index
 
+# 生成 index.json，有变化时开（或更新）一个 PR，由维护者审核合并，不直接推送 main
 on:
   push:
     branches: [main]
-    paths: ["plugins.txt", ".github/workflows/generate.yml"]
-  # PR 只试跑生成器检查来源能否读取，不提交
-  pull_request:
-    paths: ["plugins.txt", ".github/workflows/generate.yml"]
+    paths: ["plugins.txt", "scripts/**", ".github/**"]
   schedule:
     - cron: "0 3 * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
-  group: generate-index-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
+  group: generate-index
   cancel-in-progress: false
+
+env:
+  DSH_REF: dsh-v0.2.1-rc.3
 
 jobs:
   generate:
@@ -24,45 +26,45 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup-generator
         with:
-          node-version: 24
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11.28.5
-
-      - name: Fetch DSH plugin market generator
-        run: |
-          git clone --depth 1 https://github.com/deepseek-ai/deepseek-harness "$RUNNER_TEMP/dsh"
-          cd "$RUNNER_TEMP/dsh"
-          pnpm install --filter "@deepseek-ai/dsh-plugin-market-generator..." --ignore-scripts
+          dsh-ref: ${{ env.DSH_REF }}
 
       - uses: actions/cache@v4
         with:
           path: .plugin-market-cache
-          key: plugin-market-cache-${{ github.run_id }}
-          restore-keys: plugin-market-cache-
+          key: plugin-market-cache-${{ env.DSH_REF }}-${{ github.run_id }}
+          restore-keys: plugin-market-cache-${{ env.DSH_REF }}-
 
+      # 有来源读取失败（退出码 1）时生成器保留它上次的结果，照样开 PR，最后再让任务失败以便通知
       - name: Generate index.json
+        id: generate
         run: |
-          cd "$RUNNER_TEMP/dsh"
-          pnpm --filter @deepseek-ai/dsh-plugin-market-generator start \
-            --input "$GITHUB_WORKSPACE/plugins.txt" \
-            --output "$GITHUB_WORKSPACE/index.json" \
-            --cache "$GITHUB_WORKSPACE/.plugin-market-cache" \
-            --title "Seek Bazaar" \
-            --description "DeepSeek Harness 插件市场"
+          status=0
+          scripts/generate.sh 2>&1 | tee "$RUNNER_TEMP/generate.log" || status=${PIPESTATUS[0]}
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          {
+            echo 'summary<<EOF'
+            tail -n 40 "$RUNNER_TEMP/generate.log"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+          [ "$status" -le 1 ]
 
-      - name: Commit changes
-        if: github.event_name != 'pull_request'
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          branch: bot/refresh-index
+          delete-branch: true
+          commit-message: Refresh index.json
+          title: Refresh index.json
+          body: |
+            由 [generate index](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) 自动生成。合并前请看一下 diff 里新增的插件和版本。
+
+            ```
+            ${{ steps.generate.outputs.summary }}
+            ```
+
+      - name: Fail on unreadable sources
+        if: steps.generate.outputs.status == '1'
         run: |
-          git add index.json icons 2>/dev/null || git add index.json
-          if git diff --cached --quiet; then
-            echo "index.json unchanged"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Regenerate index.json"
-          git push
+          echo "::error::有来源读取失败，见 Generate index.json 步骤"
+          exit 1
