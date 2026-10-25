@@ -1,0 +1,6 @@
+# seek-bazaar 收录列表：每行一个 npm 包名或 Git 仓库 URL，# 开头为注释。
+# 改完推送，GitHub Actions 会自动重新生成 index.json。
+#
+# 示例：
+# @scope/dsh-example
+# https://github.com/author/dsh-plugin
