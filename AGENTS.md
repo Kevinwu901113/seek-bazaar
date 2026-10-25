@@ -29,6 +29,10 @@ seek-bazaar 是 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harne
 
 bot 直接推送 main，所以若给 main 开分支保护，需要允许 GitHub Actions 推送，否则生成会失败。
 
+## 发布
+
+GitHub Pages 从 main 分支根目录发布（仓库设置里的 Deploy from a branch），main 每次有提交都会自动更新，无需 workflow。用户添加的索引源是 `https://suj1e.github.io/seek-bazaar/index.json`；图标相对这个地址解析，所以 `index.json` 和 `icons/` 必须留在仓库根目录。
+
 生成器只下载和读取文件，不安装、不执行插件代码。
 
 ## 生成器版本

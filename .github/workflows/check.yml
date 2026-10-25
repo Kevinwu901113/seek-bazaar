@@ -15,7 +15,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Fetch base branch
         run: git fetch --depth 1 origin "$GITHUB_BASE_REF"
@@ -24,7 +24,7 @@ jobs:
         with:
           dsh-ref: ${{ env.DSH_REF }}
 
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@v6
         with:
           path: .plugin-market-cache
           key: plugin-market-cache-${{ env.DSH_REF }}-

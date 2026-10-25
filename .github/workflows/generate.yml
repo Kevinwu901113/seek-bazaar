@@ -23,13 +23,13 @@ jobs:
   generate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: ./.github/actions/setup-generator
         with:
           dsh-ref: ${{ env.DSH_REF }}
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: .plugin-market-cache
           key: plugin-market-cache-${{ env.DSH_REF }}-${{ github.run_id }}
