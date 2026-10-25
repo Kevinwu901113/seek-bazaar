@@ -1,12 +1,14 @@
 name: check sources
 
-# PR 只检查，不提交：新增来源必须能读取且至少产出一个插件
+# PR 只检查，不提交。
+# 用 pull_request_target：工作流和脚本始终取自 main，PR 改了脚本也不会被执行。
+# PR 里只读取 plugins.txt 这个数据文件，从不运行 PR 的代码；生成器也不执行插件代码。
 on:
-  pull_request:
-    paths: ["plugins.txt", "scripts/**", ".github/**"]
+  pull_request_target:
 
 permissions:
   contents: read
+  pull-requests: read
 
 env:
   DSH_REF: dsh-v0.2.1-rc.3
@@ -17,8 +19,26 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Fetch base branch
-        run: git fetch --depth 1 origin "$GITHUB_BASE_REF"
+      # 外部贡献者的 PR 只允许改 plugins.txt；仓库成员不受限
+      - name: Only plugins.txt may change
+        if: ${{ !contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association) }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          others="$(gh pr diff "$PR" -R "$GITHUB_REPOSITORY" --name-only | grep -vx plugins.txt || true)"
+          if [ -n "$others" ]; then
+            echo "::error::收录 PR 只能修改 plugins.txt，以下文件不允许改动："
+            echo "$others"
+            exit 1
+          fi
+
+      - name: Take plugins.txt from the PR
+        env:
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          git fetch --depth 1 origin "refs/pull/$PR/head"
+          git show FETCH_HEAD:plugins.txt > plugins.txt
 
       - uses: ./.github/actions/setup-generator
         with:
@@ -30,5 +50,6 @@ jobs:
           key: plugin-market-cache-${{ env.DSH_REF }}-
           restore-keys: plugin-market-cache-${{ env.DSH_REF }}-
 
+      # HEAD 仍是 main 的提交，以它的 plugins.txt 为基准找出新增来源
       - name: Check new sources
-        run: scripts/check-sources.sh "origin/$GITHUB_BASE_REF"
+        run: scripts/check-sources.sh HEAD
