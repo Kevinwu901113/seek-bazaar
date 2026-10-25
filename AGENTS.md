@@ -34,7 +34,11 @@ bot 直接推送 main，所以若给 main 开分支保护，需要允许 GitHub 
 
 ## 发布
 
-GitHub Pages 从 main 分支根目录发布（仓库设置里的 Deploy from a branch），main 每次有提交都会自动更新，无需 workflow。用户添加的索引源是 `https://suj1e.github.io/seek-bazaar/index.json`；图标相对这个地址解析，所以 `index.json` 和 `icons/` 必须留在仓库根目录。
+GitHub Pages 从 main 分支根目录发布（仓库设置里的 Deploy from a branch），main 每次有提交都会自动更新，无需 workflow。用户添加的索引源是 `https://seekbazaar.beer/index.json`；图标相对这个地址解析，所以 `index.json` 和 `icons/` 必须留在仓库根目录。
+
+自定义域名 `seekbazaar.beer` 在仓库 Pages 设置里绑定，并已在 GitHub 账号里验证所有权。GitHub 在仓库根目录维护 `CNAME` 文件，不要删。DNS 在阿里云：`@` 的 4 条 A 记录指向 `185.199.108–111.153`，`www` 的 CNAME 指向 `suj1e.github.io`。旧地址 `https://suj1e.github.io/seek-bazaar/` 会自动跳转到新域名。
+
+没有用 `.cn` 域名：常见代理规则会让 `.cn` 走直连，访问 GitHub Pages 容易失败。
 
 站点首页由 Jekyll 从 README 渲染；网站图标是 `favicon.svg`，通过 `_includes/head-custom.html` 引入。
 

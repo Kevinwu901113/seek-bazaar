@@ -7,7 +7,7 @@
 在 DSH 里打开 **插件 → 发现 → 添加索引源**，填入：
 
 ```
-https://suj1e.github.io/seek-bazaar/index.json
+https://seekbazaar.beer/index.json
 ```
 
 ## 收录插件
