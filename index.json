@@ -10,8 +10,8 @@
         "zh": "Anvil 铁砧"
       },
       "description": {
-        "en": "Composer upgrades: one-click prompt polish, next-message prediction, and a gear-shift model and reasoning picker.",
-        "zh": "输入框增强：一键润色、预测下一句，以及挡位式的模型与推理等级选择。"
+        "en": "Composer upgrades: one-click prompt polish, next-message prediction, a model menu with a furnace-style reasoning slider, and a pixel dragon that lives on your input box.",
+        "zh": "输入框增强：一键润色、预测下一句、带熔炉滑块的模型与推理等级菜单，还有一只趴在输入框上的像素小火龙。"
       },
       "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImUiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmNkMzRkIi8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2ZiOTIzYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y0NzJiNiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMxYzE5MTciLz4KICA8cGF0aCBkPSJNMTAgMjZoMzRjNCAwIDktMiAxMS01djdjLTIgNC03IDYtMTEgNmgtM2MtMiAwLTMgMS0zIDN2M2gtMTJ2LTNjMC0yLTEtMy0zLTNoLTVjLTQgMC04LTMtOC04eiIgZmlsbD0iI2E4YTI5ZSIvPgogIDxyZWN0IHg9IjIwIiB5PSI0MCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjQiIHJ4PSIxIiBmaWxsPSIjNzg3MTZjIi8+CiAgPHJlY3QgeD0iMTQiIHk9IjQ0IiB3aWR0aD0iMzIiIGhlaWdodD0iNiIgcng9IjIiIGZpbGw9IiNhOGEyOWUiLz4KICA8cGF0aCBkPSJNMzMgNkMzMy45IDEyLjUgMzUuOCAxNC40IDQyIDE1LjVDMzUuOCAxNi42IDMzLjkgMTguNSAzMyAyNUMzMi4xIDE4LjUgMzAuMiAxNi42IDI0IDE1LjVDMzAuMiAxNC40IDMyLjEgMTIuNSAzMyA2WiIgZmlsbD0idXJsKCNlKSIvPgogIDxjaXJjbGUgY3g9IjQ2IiBjeT0iMTAiIHI9IjEuNiIgZmlsbD0iI2ZkZTY4YSIvPjxjaXJjbGUgY3g9IjIwIiBjeT0iMTIiIHI9IjEuMyIgZmlsbD0iI2ZiOTIzYyIvPjxjaXJjbGUgY3g9IjQ4IiBjeT0iMjAiIHI9IjEuMSIgZmlsbD0iI2Y0NzJiNiIvPgo8L3N2Zz4K",
       "author": "suj1e",
@@ -29,6 +29,16 @@
         ]
       },
       "versions": [
+        {
+          "version": "0.3.1",
+          "publishTimestamp": 1793029536,
+          "source": {
+            "type": "npm"
+          },
+          "engines": {
+            "dsh": ">=0.2.1-rc.3 <0.3.0"
+          }
+        },
         {
           "version": "0.3.0",
           "publishTimestamp": 1793029291,
