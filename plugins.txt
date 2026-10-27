@@ -5,3 +5,4 @@
 # @scope/dsh-example
 # https://github.com/author/dsh-plugin
 dsh-anvil
+@kevinwu901113/dsh-dot
